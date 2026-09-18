@@ -170,6 +170,8 @@
       html += '<p class="sub">选择题直接点选项判分；解答/证明题点「显示答案与解答」后自评对错，均计入统计。</p>';
       html += '<div class="navrow"><span class="chip" data-probstat></span><button class="navbtn" data-probreset>重做本节练习</button></div>';
       L.problems.forEach(function (p, i) {
+        var tocH = (window.LESSON_TOC || {})[L.id];
+        if (tocH) { for (var ti = 0; ti < tocH.length; ti++) if (tocH[ti].at === i) html += '<h3 class="lh toc-chap">' + A.esc(tocH[ti].t) + "</h3>"; }
         var c = parseChoice(p);
         html += '<div class="prob" id="' + L.id + "-p" + i + '">' +
           '<div class="prob-q"><span class="pn">' + p.n + ".</span> " + A.esc(c ? c.stem : p.q).replace(/\n/g, "<br>") + "</div>";
@@ -380,11 +382,12 @@
           (L.problems ? ' <span class="toc-pg">' + L.problems.length + " 题</span>" : "") + "</a>";
         var sec = chapterHost.querySelector("#" + k);
         var body = sec ? sec.querySelector(".lessonbody") : null;
-        var hs = (body && (!L.problems || L.content)) ? body.querySelectorAll("h3.lh, h4.lh2, h5.lh3") : [];
+        var hs = body ? body.querySelectorAll("h3.lh, h4.lh2, h5.lh3") : [];
         if (hs.length) {
           var inner = "", ct = (L.ch || "").trim();
           Array.prototype.forEach.call(hs, function (h, i) {
-            if (((h.textContent || "").trim()) === ct) return;
+            var ht = ((h.textContent || "")).trim();
+            if (ht === ct || ht === (L.title || "").trim() || ht === (L.probTitle || "").trim()) return;
             var hid = k + "-h" + i; h.id = hid;
             inner += '<a class="toc-l2" href="#' + hid + '">' + A.esc(h.textContent) + "</a>";
           });
