@@ -370,7 +370,7 @@
     if (nav) {
       var toc = '<div class="toc"><div class="toc-h">📑 本章目录</div>';
       var first = window.LESSONS[ids[0]] || {};
-      var hier = /^[^ ·]+ · [^ ·]+ · /.test(first.ch || "");
+      var hier = (first.ch || "").split(" · ").length >= 3;
       var leaf = function (k) {
         var L = window.LESSONS[k];
         var s = '<a class="toc-l1" href="#' + k + '">' + A.esc(L.title) +
@@ -395,7 +395,7 @@
         ids.forEach(function (k) {
           var L = window.LESSONS[k];
           var parts = (L.ch || "").split(" · ");
-          var sn = parts[1] || "", cn = parts[2] || "";
+          var sn = parts[1] || "", cn = (parts.length >= 4 ? parts[2] : "");
           if (!sMap[sn]) { sMap[sn] = { name: sn, chs: [], cMap: {} }; subjs.push(sMap[sn]); }
           var sj = sMap[sn];
           if (!sj.cMap[cn]) { sj.cMap[cn] = { name: cn, secs: [] }; sj.chs.push(sj.cMap[cn]); }
@@ -404,9 +404,9 @@
         subjs.forEach(function (sj) {
           toc += '<div class="toc-subj">' + A.esc(sj.name) + "</div>";
           sj.chs.forEach(function (ch) {
-            toc += '<div class="toc-ch"><div class="toc-chh">' + A.esc(ch.name) + "</div>";
+            if (ch.name) toc += '<div class="toc-ch"><div class="toc-chh">' + A.esc(ch.name) + "</div>";
             ch.secs.forEach(function (k) { toc += leaf(k); });
-            toc += "</div>";
+            if (ch.name) toc += "</div>";
           });
         });
       } else {
@@ -451,13 +451,21 @@
           el.classList.remove("active");
         });
         if (cur && links[cur]) {
-          var ch = null, p = links[cur].parentNode;
-          while (p && p !== nav) { if (/(^|\s)toc-ch(\s|$)/.test(p.className || "")) { ch = p; break; } p = p.parentNode; }
-          if (ch) {
-            var h = ch.querySelector(".toc-chh"); if (h) h.classList.add("active");
-            var s = ch.previousElementSibling;
+          var ch = null, subj = null, p = links[cur].parentNode;
+          while (p && p !== nav) {
+            var pcls = p.className || "";
+            if (!ch && /(^|\s)toc-ch(\s|$)/.test(pcls)) ch = p;
+            if (!subj && /(^|\s)toc-subj(\s|$)/.test(pcls)) subj = p;
+            p = p.parentNode;
+          }
+          if (subj) subj.classList.add("active");
+          else {
+            var s = links[cur].previousElementSibling;
             while (s && !/(^|\s)toc-subj(\s|$)/.test(s.className || "")) s = s.previousElementSibling;
             if (s) s.classList.add("active");
+          }
+          if (ch) {
+            var h = ch.querySelector(".toc-chh"); if (h) h.classList.add("active");
           }
         }
         if (l2.length) {
