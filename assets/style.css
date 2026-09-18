@@ -123,4 +123,6 @@ body[data-page="chapter"] .wrap{max-width:1200px}
 .qopt.locked{cursor:default}
 .qopt.right{border-color:var(--ok);background:rgba(31,157,85,.12);color:var(--ok)}
 .qopt.wrong{border-color:var(--no);background:rgba(214,69,69,.12);color:var(--no)}
+.qopt.sel{border-color:var(--acc);background:var(--hl)}
+.qopt.sel.wrong{background:rgba(214,69,69,.12)}
 .qexp{margin-top:8px;font-size:13.5px;color:var(--sub);border-top:1px dashed var(--line);padding-top:8px}

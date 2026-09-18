@@ -53,7 +53,17 @@
     var info = (rec && rec.q) ? rec : lookupRec(key);
     if (!info || !info.q) return "";
     var h = '<div class="wq">' + esc(info.q) + "</div>";
-    if (info.a) h += '<div class="wa">答案：' + esc(info.a) + "</div>";
+    if (info.options) {
+      var ans = info.answers || (info.answer != null ? [info.answer] : []);
+      var picks = info.picks || (info.pick != null ? [info.pick] : []);
+      h += '<div class="wopts">' + info.options.map(function (o, i) {
+        var cls = ans.indexOf(i) >= 0 ? "wok" : (picks.indexOf(i) >= 0 ? "wbad" : "");
+        return '<div class="wopt ' + cls + '">' + String.fromCharCode(65 + i) + ". " + esc(o) + "</div>";
+      }).join("") + "</div>";
+    } else if (info.a) {
+      h += '<div class="wa">答案：' + esc(info.a) + "</div>";
+    }
+    if (info.explain) h += '<div class="wexp">' + esc(info.explain) + "</div>";
     if (info.sol) h += '<details class="sol"><summary>详细解答</summary><div class="ansbox">' + esc(info.sol) + "</div></details>";
     return h;
   }

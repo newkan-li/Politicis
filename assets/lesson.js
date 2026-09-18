@@ -16,7 +16,7 @@
     return s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   }
   function parseChoice(p) {
-    var m = p.a && /^\(([A-D])\)$/.exec(String(p.a).trim());
+    var m = p.a && /^\(([A-D]+)\)$/.exec(String(p.a).trim());
     if (!m || !p.q) return null;
     var q = p.q, idx = [], i;
     for (i = 0; i < 4; i++) idx.push(q.indexOf("(" + "ABCD"[i] + ")"));
@@ -27,7 +27,8 @@
       var end = i < 3 ? idx[i + 1] : q.length;
       opts.push(q.slice(idx[i] + 3, end).replace(/^[、:：\s]+/, "").replace(/[\s　]+$/, ""));
     }
-    return { stem: stem, options: opts, answer: m[1].charCodeAt(0) - 65 };
+    var ans = m[1].split("").map(function (ch) { return ch.charCodeAt(0) - 65; }).sort(function (a, b) { return a - b; });
+    return { stem: stem, options: opts, answers: ans, answer: ans[0], multi: ans.length > 1 };
   }
   function renderMarkdown(md) {
     var lines = String(md).replace(/\r/g, "").split("\n").map(function (ln) {
@@ -171,11 +172,13 @@
         html += '<div class="prob" id="' + L.id + "-p" + i + '">' +
           '<div class="prob-q"><span class="pn">' + p.n + ".</span> " + A.esc(c ? c.stem : p.q).replace(/\n/g, "<br>") + "</div>";
         if (c) {
-          html += '<div class="qopts">';
+          if (c.multi) html += '<p class="sub" style="margin:2px 0 4px">多选题（多选、少选、错选均不得分）</p>';
+          html += '<div class="qopts' + (c.multi ? " multi" : "") + '">';
           c.options.forEach(function (o, j) {
             html += '<button class="qopt" data-opt="' + j + '">' + String.fromCharCode(65 + j) + ". " + A.esc(o) + "</button>";
           });
           html += "</div>";
+          if (c.multi) html += '<div class="navrow"><button class="navbtn" data-submit>提交答案</button></div>';
         } else {
           html += '<div class="navrow"><button class="navbtn" data-show>显示答案与解答</button></div>';
         }
@@ -265,23 +268,47 @@
       var c = parseChoice(p);
       if (c) {
         var btns = box.querySelectorAll("[data-opt]");
+        var submitBtn = box.querySelector("[data-submit]");
         function paint() {
           Array.prototype.forEach.call(btns, function (b) {
             var j = parseInt(b.getAttribute("data-opt"), 10);
             b.classList.add("locked");
-            if (j === c.answer) b.classList.add("right");
-            if (st && st.pick === j && j !== c.answer) b.classList.add("wrong");
+            if (c.answers.indexOf(j) >= 0) b.classList.add("right");
+            if (st) {
+              var picked = c.multi ? (st.picks || []) : [st.pick];
+              if (picked.indexOf(j) >= 0) { b.classList.add("sel"); if (c.answers.indexOf(j) < 0) b.classList.add("wrong"); }
+            }
           });
+          if (submitBtn) submitBtn.disabled = true;
         }
-        Array.prototype.forEach.call(btns, function (b) {
-          b.onclick = function () {
+        if (c.multi) {
+          var cur = [];
+          Array.prototype.forEach.call(btns, function (b) {
+            b.onclick = function () {
+              if (store[key]) return;
+              var j = parseInt(b.getAttribute("data-opt"), 10), p2 = cur.indexOf(j);
+              if (p2 >= 0) { cur.splice(p2, 1); b.classList.remove("sel"); } else { cur.push(j); b.classList.add("sel"); }
+            };
+          });
+          if (submitBtn) submitBtn.onclick = function () {
             if (store[key]) return;
-            var j = parseInt(b.getAttribute("data-opt"), 10);
-            store[key] = { pick: j, ok: (j === c.answer), q: c.stem, options: c.options, answer: c.answer };
+            var picks = cur.slice().sort(function (a, b) { return a - b; });
+            var ok = picks.length === c.answers.length && picks.every(function (x, i) { return x === c.answers[i]; });
+            store[key] = { picks: picks, ok: ok, q: c.stem, options: c.options, answers: c.answers, multi: true };
             A.jset("prob", store); st = store[key];
             paint(); reveal(); stats();
           };
-        });
+        } else {
+          Array.prototype.forEach.call(btns, function (b) {
+            b.onclick = function () {
+              if (store[key]) return;
+              var j = parseInt(b.getAttribute("data-opt"), 10);
+              store[key] = { pick: j, ok: (j === c.answer), q: c.stem, options: c.options, answer: c.answer };
+              A.jset("prob", store); st = store[key];
+              paint(); reveal(); stats();
+            };
+          });
+        }
         if (st) { paint(); reveal(); }
       } else {
         var showBtn = box.querySelector("[data-show]");
