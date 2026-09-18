@@ -156,7 +156,8 @@
       L.blocks.forEach(function (b) {
         if (b.t === "h") html += '<h3 class="lh">' + A.esc(b.x) + "</h3>";
         else if (b.t === "h2") html += '<h4 class="lh2">' + A.esc(b.x) + "</h4>";
-        else if (b.t === "p") html += "<p>" + A.esc(b.x) + "</p>";
+        else if (b.t === "p") html += "<p>" + A.esc(b.x).replace(/\n/g, "<br>") + "</p>";
+        else if (b.t === "pg") html += '<div class="pgmark">第 ' + A.esc(String(b.x).replace(/^第/, "").replace(/页$/, "")) + " 页</div>";
         else if (b.t === "note") html += '<div class="notes">' + A.esc(b.x) + "</div>";
         else if (b.t === "fml") html += '<div class="fml">' + A.esc(b.x) + "</div>";
         else if (b.t === "ex") html += '<div class="ex"><div class="ex-q">' + A.esc(b.q) + '</div>' +
