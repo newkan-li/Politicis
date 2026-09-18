@@ -3,8 +3,8 @@ window.LESSONS = window.LESSONS || {};
   var R = String.raw;
   window.LESSONS["q1000_s1"] = {
     id: "q1000_s1",
-    ch: "肖1000 · 马原 · 多项选择题",
-    title: "马原 · 多项选择题",
+    ch: "肖1000 · 第一部分 马克思主义基本原理 · 多项选择题",
+    title: "多项选择题",
     probTitle: "马克思主义基本原理 · 多项选择题（含解析）",
     book: "肖秀荣《1000题》2027 · 第一部分",
     problems: [

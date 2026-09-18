@@ -3,8 +3,8 @@ window.LESSONS = window.LESSONS || {};
   var R = String.raw;
   window.LESSONS["q1000_s3"] = {
     id: "q1000_s3",
-    ch: "肖1000 · 毛中特 · 多项选择题",
-    title: "毛中特 · 多项选择题",
+    ch: "肖1000 · 第二部分 毛泽东思想和中国特色社会主义理论体系概论 · 多项选择题",
+    title: "多项选择题",
     probTitle: "毛泽东思想和中国特色社会主义理论体系概论 · 多项选择题（含解析）",
     book: "肖秀荣《1000题》2027 · 第二部分",
     problems: [
