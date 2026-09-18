@@ -132,5 +132,7 @@ body[data-page="chapter"] .wrap{max-width:1200px}
 .bxpage{position:relative;width:760px;margin:14px auto;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--fg) 2%,transparent)}
 .bxnum{position:absolute;top:4px;right:8px;font-size:11px;color:var(--sub)}
 .bxpage .bl{position:absolute;white-space:nowrap;line-height:1.18}
+.bxpage .bl.b{font-weight:700}
+.bxpage .bl.acc{color:var(--acc)}
 @media(max-width:820px){.bxpage{width:100%;}.bxpage .bl{font-size:11px !important}}
 #chapter .lessonbody h3.toc-chap{margin:22px 0 8px;color:var(--acc);border-left:4px solid var(--acc);padding:2px 0 2px 10px;font-size:15px;background:color-mix(in srgb,var(--acc) 8%,transparent);border-radius:0 6px 6px 0}
