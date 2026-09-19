@@ -141,6 +141,10 @@
 
   function lessonHtml(L) {
     var html = "";
+    if (!L.problems && (window.LECTURE_DRILL || {})[L.id]) {
+      L.problems = window.LECTURE_DRILL[L.id];
+      L.probTitle = L.probTitle || "本节真题自测（做后显示答案与解析）";
+    }
     if (L.content) {
       var figs = FIG[L.id.split("_")[0]] || {};
       L.content.forEach(function (pg) {
