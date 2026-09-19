@@ -138,3 +138,8 @@ body[data-page="chapter"] .wrap{max-width:1200px}
 .bxpage .sidebox{position:absolute;background:color-mix(in srgb,var(--fg) 3%,transparent);border-radius:6px;z-index:0}
 @media(max-width:820px){.bxpage{width:100%;}.bxpage .bl{font-size:11px !important}}
 #chapter .lessonbody h3.toc-chap{margin:22px 0 8px;color:var(--acc);border-left:4px solid var(--acc);padding:2px 0 2px 10px;font-size:15px;background:color-mix(in srgb,var(--acc) 8%,transparent);border-radius:0 6px 6px 0}
+.pgimg{margin:12px auto;max-width:760px}
+.pgimg img{width:100%;display:block;border:1px solid var(--line);border-radius:8px}
+.pgimg figcaption{text-align:center;font-size:12px;color:var(--sub);margin-top:4px}
+.txtver{margin:10px 0}
+.txtver>summary{cursor:pointer;color:var(--sub);font-size:13px}
