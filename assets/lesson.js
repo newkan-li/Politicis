@@ -16,16 +16,18 @@
     return s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   }
   function parseChoice(p) {
-    var m = p.a && /^\(([A-D]+)\)$/.exec(String(p.a).trim());
+    var L = "ABCDE";
+    var m = p.a && /^\(([A-E]+)\)$/.exec(String(p.a).trim());
     if (!m || !p.q) return null;
-    var q = p.q, idx = [], i;
-    for (i = 0; i < 4; i++) idx.push(q.indexOf("(" + "ABCD"[i] + ")"));
-    for (i = 0; i < 4; i++) if (idx[i] < 0) return null;
-    for (i = 1; i < 4; i++) if (idx[i] < idx[i - 1]) return null;
-    var stem = q.slice(0, idx[0]).trim(), opts = [];
-    for (i = 0; i < 4; i++) {
-      var end = i < 3 ? idx[i + 1] : q.length;
-      opts.push(q.slice(idx[i] + 3, end).replace(/^[、:：\s]+/, "").replace(/[\s　]+$/, ""));
+    var q = p.q, found = [], i;
+    for (i = 0; i < L.length; i++) { var k = q.indexOf("(" + L[i] + ")"); if (k >= 0) found.push({ i: i, k: k }); }
+    if (found.length < 4 || found.length > 5) return null;
+    for (i = 0; i < found.length; i++) { if (found[i].i !== i) return null; if (i && found[i].k < found[i - 1].k) return null; }
+    var n = found.length;
+    var stem = q.slice(0, found[0].k).trim(), opts = [];
+    for (i = 0; i < n; i++) {
+      var end = i < n - 1 ? found[i + 1].k : q.length;
+      opts.push(q.slice(found[i].k + 3, end).replace(/^[、:：\s]+/, "").replace(/[\s　]+$/, ""));
     }
     var ans = m[1].split("").map(function (ch) { return ch.charCodeAt(0) - 65; }).sort(function (a, b) { return a - b; });
     return { stem: stem, options: opts, answers: ans, answer: ans[0], multi: ans.length > 1 };
