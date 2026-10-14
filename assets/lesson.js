@@ -7,8 +7,9 @@
   var HW_SAVE_T = null, HWDATA = null, HW_ONCE = false, HW_RO = null, HW_IO = null, HW_CVS = [], HW_PEN_T = 0, HW_THEME_OBS = null;
   function hwSetWriting(on) { window.__hwWriting = !!on; try { document.documentElement.classList.toggle("hw-writing", !!on); } catch (e) { } }
   function hwLoad() { if (!HWDATA) { try { HWDATA = A.jget("hw", {}) || {}; } catch (e) { HWDATA = {}; } } return HWDATA; }
-  function hwPersist() { try { A.jset("hw", hwLoad()); } catch (e) { try { if (window.__hwQuotaWarn !== 1) { window.__hwQuotaWarn = 1; alert("本机存储已满：手写可能无法保存。请用「\ud83d\udcbe \u5907\u4efd」导出后清理，或换设备。"); } } catch (x) { } } }
+  function hwPersist() { try { A.jset("hw", hwLoad()); } catch (e) { try { if (window.__hwQuotaWarn !== 1) { window.__hwQuotaWarn = 1; alert("本机存储已满：手写可能无法保存。请用「💾 备份」导出后清理，或换设备。"); } } catch (x) { } } }
   function hwInk() { try { if (document.documentElement.getAttribute("data-theme") === "dark") return "#e8eef6"; } catch (e) { } return "#1a2b45"; }
+  function hwW(e) { var pr = (e && typeof e.pressure === "number" && e.pressure > 0 && e.pressure <= 1) ? e.pressure : 0.5; return Math.max(1.1, Math.min(6.5, 2.2 * (0.45 + 1.25 * pr))); }
   function hwRedrawAll() { for (var i = 0; i < HW_CVS.length; i++) { var c = HW_CVS[i]; if (c && c._redraw && c.isConnected && c.offsetWidth) c._redraw(); } }
   function hwObserveTheme() { if (HW_THEME_OBS || !window.MutationObserver) return; HW_THEME_OBS = new MutationObserver(function () { hwRedrawAll(); }); try { HW_THEME_OBS.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (e) { } }
   function hwRegister(c) { if (HW_CVS.indexOf(c) < 0) HW_CVS.push(c); hwObserveTheme(); if (!HW_RO && window.ResizeObserver) { HW_RO = new ResizeObserver(function (es) { es.forEach(function (en) { var x = en.target; if (x._redraw && x.offsetWidth) x._redraw(); }); }); } try { if (HW_RO) HW_RO.observe(c); } catch (e) { } }
@@ -62,18 +63,20 @@
         if (!ensure()) return;
         var col = hwInk();
         ctx.clearRect(0, 0, RW, RH);
-        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineCap = "round"; ctx.lineJoin = "round";
         self.get(key).forEach(function (st) {
           if (!st || !st.length) return;
-          if (st.length === 1) { ctx.beginPath(); ctx.arc(st[0][0] * RW, st[0][1] * RH, 1.6, 0, 7); ctx.fill(); return; }
-          ctx.beginPath();
-          st.forEach(function (p, i) { var x = p[0] * RW, y = p[1] * RH; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
-          ctx.stroke();
+          if (st.length === 1) { ctx.beginPath(); ctx.arc(st[0][0] * RW, st[0][1] * RH, (st[0][2] || 2) / 2, 0, 7); ctx.fill(); return; }
+          for (var i = 1; i < st.length; i++) {
+            var a = st[i - 1], b = st[i];
+            ctx.lineWidth = (((a[2] || 2) + (b[2] || 2)) / 2);
+            ctx.beginPath(); ctx.moveTo(a[0] * RW, a[1] * RH); ctx.lineTo(b[0] * RW, b[1] * RH); ctx.stroke();
+          }
         });
       }
-      function seg(a, b) { if (!ctx) return; ctx.strokeStyle = hwInk(); ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.beginPath(); ctx.moveTo(a[0] * RW, a[1] * RH); ctx.lineTo(b[0] * RW, b[1] * RH); ctx.stroke(); }
-      function dotOn(p) { if (!ctx) return; ctx.fillStyle = hwInk(); ctx.beginPath(); ctx.arc(p[0] * RW, p[1] * RH, 1.6, 0, 7); ctx.fill(); }
-      function pos(e) { var p = (e.touches && e.touches[0]) || e; return [(p.clientX - rect.left) / rect.width, (p.clientY - rect.top) / rect.height]; }
+      function seg(a, b) { if (!ctx) return; ctx.strokeStyle = hwInk(); ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = (((a[2] || 2) + (b[2] || 2)) / 2); ctx.beginPath(); ctx.moveTo(a[0] * RW, a[1] * RH); ctx.lineTo(b[0] * RW, b[1] * RH); ctx.stroke(); }
+      function dotOn(p) { if (!ctx) return; ctx.fillStyle = hwInk(); ctx.beginPath(); ctx.arc(p[0] * RW, p[1] * RH, (p[2] || 2) / 2, 0, 7); ctx.fill(); }
+      function pos(e) { var p = (e.touches && e.touches[0]) || e; return [(p.clientX - rect.left) / rect.width, (p.clientY - rect.top) / rect.height, hwW(e)]; }
       function eraserOn() { return canvas.dataset.eraser === "1"; }
       function eraseAt(p) {
         var d = hwLoad();
@@ -139,14 +142,14 @@
   function hwBox(key, tall) {
     var box = A.el("div", "hwbox");
     var bar = A.el("div", "hwbar");
-    bar.appendChild(A.el("span", "lbl", "\u270d\ufe0f \u624b\u5199\u89e3\u7b54/\u6f14\u7b97\uff08\u89e6\u63a7\u7b14/\u624b\u6307\uff09"));
-    var bEr = A.el("button", null, "\u6a61\u76ae\uff1a\u5173"), bUn = A.el("button", null, "\u64a4\u9500"), bCl = A.el("button", null, "\u6e05\u7a7a");
+    bar.appendChild(A.el("span", "lbl", "✍️ 手写解答/演算（触控笔/手指）"));
+    var bEr = A.el("button", null, "橡皮：关"), bUn = A.el("button", null, "撤销"), bCl = A.el("button", null, "清空");
     bar.appendChild(bEr); bar.appendChild(bUn); bar.appendChild(bCl);
     var cv = A.el("canvas", "hw" + (tall ? " tall" : ""));
     box.appendChild(bar); box.appendChild(cv);
-    bEr.onclick = function () { var on = cv.dataset.eraser === "1"; cv.dataset.eraser = on ? "0" : "1"; bEr.textContent = "\u6a61\u76ae\uff1a" + (on ? "\u5173" : "\u5f00"); bEr.classList.toggle("on", !on); };
+    bEr.onclick = function () { var on = cv.dataset.eraser === "1"; cv.dataset.eraser = on ? "0" : "1"; bEr.textContent = "橡皮：" + (on ? "关" : "开"); bEr.classList.toggle("on", !on); };
     bUn.onclick = function () { HW.undo(key); if (cv._redraw) cv._redraw(); };
-    bCl.onclick = function () { if (confirm("\u6e05\u7a7a\u6b64\u5904\u624b\u5199\uff1f")) { HW.set(key, []); if (cv._redraw) cv._redraw(); } };
+    bCl.onclick = function () { if (confirm("清空此处手写？")) { HW.set(key, []); if (cv._redraw) cv._redraw(); } };
     setTimeout(function () { HW.attach(cv, key); }, 0);
     return box;
   }
