@@ -1,5 +1,197 @@
 (function () {
   var A = window.MathApp || {};
+
+  /* ================= 手写（iPad / Apple Pencil 兼容） =================
+     整笔用 window 级 pointermove/up 跟踪（不用 setPointerCapture、不在 pointer 里 preventDefault、
+     不用 pointerleave 断笔）；逐段增量绘制；保存防抖；书写期禁选中防系统菜单。 */
+  var HW_SAVE_T = null, HWDATA = null, HW_ONCE = false;
+  function hwSetWriting(on) { window.__hwWriting = !!on; try { document.documentElement.classList.toggle("hw-writing", !!on); } catch (e) { } }
+  function hwLoad() { if (!HWDATA) { try { HWDATA = A.jget("hw", {}) || {}; } catch (e) { HWDATA = {}; } } return HWDATA; }
+  function hwPersist() { try { A.jset("hw", hwLoad()); } catch (e) { } }
+  function hwCSS() {
+    if (document.getElementById("hwSetCSS")) return;
+    var s = document.createElement("style"); s.id = "hwSetCSS";
+    s.textContent =
+      'html.hw-writing{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}'
+      + '.hwbox{margin-top:8px}'
+      + '.hwbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 6px}'
+      + '.hwbar .lbl{font-size:12.5px;color:var(--sub)}'
+      + '.hwbar button{border:1px solid var(--line);background:var(--card);color:var(--acc);border-radius:14px;padding:3px 12px;font-size:12.5px;cursor:pointer}'
+      + '.hwbar button.on{background:#c0392b;color:#fff;border-color:#c0392b}'
+      + 'canvas.hw{display:block;width:100%;height:150px;border:1.5px dashed #b9c6d2;border-radius:8px;background:#fffdf7;touch-action:none}'
+      + 'canvas.hw.tall{height:240px}'
+      + 'html[data-theme="dark"] canvas.hw{background:#1c2229;border-color:#3a4756}'
+      + 'html[data-theme="sepia"] canvas.hw{background:#fbf5e6;border-color:#cdbb95}'
+      + '.hwfab{position:fixed;right:12px;z-index:9995;background:var(--acc);color:#fff;border:none;border-radius:22px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.28)}'
+      + '#hwScratch{bottom:72px}#hwBackup{bottom:116px}'
+      + '#hwPad,#hwBak{position:fixed;inset:0;z-index:9996;display:none;align-items:center;justify-content:center;background:rgba(15,22,35,.55);padding:16px}'
+      + '#hwPad .card,#hwBak .card{background:#fff;border-radius:14px;max-width:960px;width:100%;max-height:92vh;overflow:auto;padding:14px 16px;box-shadow:0 12px 40px rgba(0,0,0,.35)}'
+      + '#hwPad .hd,#hwBak .hd{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}'
+      + '#hwBak textarea{width:100%;height:160px;font:12px/1.5 ui-monospace,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;box-sizing:border-box;background:var(--card);color:var(--fg)}'
+      + 'html[data-theme="dark"] #hwPad .card,html[data-theme="dark"] #hwBak .card{background:#151b24;color:#e6e9ef}'
+      + 'html[data-theme="dark"] #hwPad .card b,html[data-theme="dark"] #hwBak .card b{color:#9fc3ff}'
+      + '@media print{.hwfab,.hwbar,#hwPad,#hwBak{display:none!important}}';
+    document.head.appendChild(s);
+  }
+  var HW = {
+    get: function (key) { return hwLoad()[key] || []; },
+    set: function (key, strokes) { var d = hwLoad(); d[key] = strokes; hwPersist(); },
+    undo: function (key) { var d = hwLoad(), arr = d[key] || []; arr.pop(); d[key] = arr; hwPersist(); },
+    attach: function (canvas, key) {
+      var self = this;
+      canvas.dataset.key = key;
+      var ctx = null, dpr = 1, RW = 0, RH = 0, rect = null, act = null;
+      function ensure() {
+        dpr = window.devicePixelRatio || 1;
+        var r = canvas.getBoundingClientRect();
+        if (!r.width) return false;
+        RW = r.width; RH = r.height;
+        var w = Math.max(1, Math.round(RW * dpr)), h = Math.max(1, Math.round(RH * dpr));
+        if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+        ctx = canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return true;
+      }
+      function drawStrokes() {
+        if (!ensure()) return;
+        ctx.clearRect(0, 0, RW, RH);
+        ctx.strokeStyle = "#1a2b45"; ctx.fillStyle = "#1a2b45"; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        self.get(key).forEach(function (st) {
+          if (!st || !st.length) return;
+          if (st.length === 1) { ctx.beginPath(); ctx.arc(st[0][0] * RW, st[0][1] * RH, 1.6, 0, 7); ctx.fill(); return; }
+          ctx.beginPath();
+          st.forEach(function (p, i) { var x = p[0] * RW, y = p[1] * RH; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+          ctx.stroke();
+        });
+      }
+      function seg(a, b) { if (!ctx) return; ctx.strokeStyle = "#1a2b45"; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.beginPath(); ctx.moveTo(a[0] * RW, a[1] * RH); ctx.lineTo(b[0] * RW, b[1] * RH); ctx.stroke(); }
+      function dotOn(p) { if (!ctx) return; ctx.fillStyle = "#1a2b45"; ctx.beginPath(); ctx.arc(p[0] * RW, p[1] * RH, 1.6, 0, 7); ctx.fill(); }
+      function pos(e) { var p = (e.touches && e.touches[0]) || e; return [(p.clientX - rect.left) / rect.width, (p.clientY - rect.top) / rect.height]; }
+      function eraserOn() { return canvas.dataset.eraser === "1"; }
+      function eraseAt(p) {
+        var d = hwLoad();
+        d[key] = self.get(key).filter(function (st) { return !st.some(function (q) { return Math.abs(q[0] - p[0]) < 0.03 && Math.abs(q[1] - p[1]) < 0.05; }); });
+        hwPersist();
+      }
+      function scheduleSave() { if (HW_SAVE_T) clearTimeout(HW_SAVE_T); HW_SAVE_T = setTimeout(function () { HW_SAVE_T = null; hwPersist(); }, 400); }
+      function down(e) {
+        if (!ensure()) return;
+        rect = canvas.getBoundingClientRect();
+        hwSetWriting(true);
+        act = { pid: (e.pointerId != null ? e.pointerId : null), cur: null };
+        var p = pos(e);
+        if (eraserOn()) { eraseAt(p); drawStrokes(); return; }
+        var cur = [p], d = hwLoad(), arr = (d[key] || []).slice(); arr.push(cur); d[key] = arr; hwPersist(); act.cur = cur; dotOn(p);
+        window.addEventListener("pointermove", move, true);
+        window.addEventListener("pointerup", end, true);
+        window.addEventListener("pointercancel", end, true);
+      }
+      function move(e) {
+        if (!act) return;
+        if (act.pid != null && e.pointerId != null && e.pointerId !== act.pid) return;
+        var p = pos(e);
+        if (eraserOn()) { eraseAt(p); drawStrokes(); return; }
+        if (act.cur && act.cur.length) { seg(act.cur[act.cur.length - 1], p); act.cur.push(p); }
+      }
+      function end(e) {
+        if (!act) return;
+        if (act.pid != null && e && e.pointerId != null && e.pointerId !== act.pid) return;
+        act = null;
+        window.removeEventListener("pointermove", move, true);
+        window.removeEventListener("pointerup", end, true);
+        window.removeEventListener("pointercancel", end, true);
+        hwSetWriting(false);
+        scheduleSave();
+      }
+      canvas.addEventListener("pointerdown", down);
+      canvas.addEventListener("touchstart", function (e) { try { e.preventDefault(); } catch (x) { } }, { passive: false });
+      canvas.addEventListener("touchmove", function (e) { if (act) { try { e.preventDefault(); } catch (x) { } } }, { passive: false });
+      canvas._redraw = drawStrokes;
+      drawStrokes();
+    }
+  };
+  function hwBox(key, tall) {
+    var box = A.el("div", "hwbox");
+    var bar = A.el("div", "hwbar");
+    bar.appendChild(A.el("span", "lbl", "✍️ 手写解答/演算（触控笔/手指）"));
+    var bEr = A.el("button", null, "橡皮：关"), bUn = A.el("button", null, "撤销"), bCl = A.el("button", null, "清空");
+    bar.appendChild(bEr); bar.appendChild(bUn); bar.appendChild(bCl);
+    var cv = A.el("canvas", "hw" + (tall ? " tall" : ""));
+    box.appendChild(bar); box.appendChild(cv);
+    bEr.onclick = function () { var on = cv.dataset.eraser === "1"; cv.dataset.eraser = on ? "0" : "1"; bEr.textContent = "橡皮：" + (on ? "关" : "开"); bEr.classList.toggle("on", !on); };
+    bUn.onclick = function () { HW.undo(key); if (cv._redraw) cv._redraw(); };
+    bCl.onclick = function () { if (confirm("清空此处手写？")) { HW.set(key, []); if (cv._redraw) cv._redraw(); } };
+    setTimeout(function () { HW.attach(cv, key); }, 0);
+    window.addEventListener("resize", function () { if (cv._redraw) cv._redraw(); });
+    return box;
+  }
+  var BAK_KEYS = ["srs", "prob", "quiz", "marks", "hw"];
+  function importTxt(txt) {
+    var o = JSON.parse(txt), data = (o && o.data) ? o.data : o;
+    BAK_KEYS.forEach(function (n) { if (data && typeof data[n] !== "undefined" && data[n] !== null) A.jset(n, data[n]); });
+    if (typeof data.hw !== "undefined") HWDATA = data.hw;
+    alert("导入成功，即将刷新。"); location.reload();
+  }
+  function openBackup() {
+    var m = document.getElementById("hwBak");
+    if (!m) {
+      m = A.el("div"); m.id = "hwBak";
+      m.innerHTML = '<div class="card"><div class="hd"><b>💾 备份 / 恢复（含作答·错题·手写）</b></div>'
+        + '<div class="hd"><button class="navbtn" id="hwBakExp">导出为文件</button>'
+        + '<label class="navbtn" style="cursor:pointer">导入文件<input type="file" id="hwBakFile" accept="application/json" style="display:none"></label>'
+        + '<span style="flex:1"></span><button class="navbtn" id="hwBakClose">关闭</button></div>'
+        + '<p style="font-size:12.5px;color:var(--sub)">导出后可在别的设备/浏览器导入恢复；数据仅存本机。</p>'
+        + '<textarea id="hwBakTxt" spellcheck="false"></textarea></div>';
+      document.body.appendChild(m);
+      m.addEventListener("click", function (e) { if (e.target === m) m.style.display = "none"; });
+      m.querySelector("#hwBakClose").onclick = function () { m.style.display = "none"; };
+      m.querySelector("#hwBakExp").onclick = function () {
+        var out = {}; BAK_KEYS.forEach(function (n) { out[n] = A.jget(n, null); });
+        var txt = JSON.stringify({ v: 1, t: Date.now(), data: out }, null, 1);
+        try {
+          var blob = new Blob([txt], { type: "application/json" });
+          var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+          a.download = "backup-" + new Date().toISOString().slice(0, 10) + ".json"; a.click();
+          setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+        } catch (e) { }
+        m.querySelector("#hwBakTxt").value = txt;
+      };
+      m.querySelector("#hwBakFile").onchange = function () {
+        var f = this.files && this.files[0]; if (!f) return;
+        var rd = new FileReader();
+        rd.onload = function () { try { importTxt(rd.result); } catch (e) { alert("导入失败：" + e.message); } };
+        rd.readAsText(f);
+      };
+      m.querySelector("#hwBakTxt").addEventListener("change", function () { try { importTxt(this.value); } catch (e) { alert("导入失败：" + e.message); } });
+    }
+    m.style.display = "flex";
+  }
+  function initHW(cid) {
+    if (HW_ONCE) return; HW_ONCE = true;
+    hwCSS();
+    var scr = A.el("button", "hwfab", "🧻 草稿纸"); scr.id = "hwScratch"; scr.type = "button"; document.body.appendChild(scr);
+    var bak = A.el("button", "hwfab", "💾 备份"); bak.id = "hwBackup"; bak.type = "button"; document.body.appendChild(bak);
+    scr.onclick = function () {
+      var pad = document.getElementById("hwPad");
+      if (!pad) {
+        pad = A.el("div"); pad.id = "hwPad";
+        pad.innerHTML = '<div class="card"><div class="hd"><b>🧻 草稿纸</b></div><div id="hwPadBody"></div>'
+          + '<div class="hd" style="justify-content:flex-end"><button class="navbtn" id="hwPadClose">关闭</button></div></div>';
+        document.body.appendChild(pad);
+        pad.addEventListener("click", function (e) { if (e.target === pad) pad.style.display = "none"; });
+        pad.querySelector("#hwPadClose").onclick = function () { pad.style.display = "none"; };
+        pad.querySelector("#hwPadBody").appendChild(hwBox("scratch:" + cid, true));
+      }
+      pad.style.display = "flex";
+      requestAnimationFrame(function () { var cv = pad.querySelector("canvas.hw"); if (cv && cv._redraw) cv._redraw(); });
+    };
+    bak.onclick = function () { openBackup(); };
+    document.addEventListener("contextmenu", function (e) { if (window.__hwWriting) { try { e.preventDefault(); } catch (x) { } } }, true);
+    document.addEventListener("selectstart", function (e) { if (window.__hwWriting) { try { e.preventDefault(); } catch (x) { } } }, true);
+    window.addEventListener("pagehide", function () { if (HW_SAVE_T) { clearTimeout(HW_SAVE_T); HW_SAVE_T = null; } hwPersist(); });
+    document.addEventListener("visibilitychange", function () { if (document.hidden && HW_SAVE_T) { clearTimeout(HW_SAVE_T); HW_SAVE_T = null; hwPersist(); } });
+  }
+
   /* ---------- 原书裁图（按章·页） ---------- */
   var FIG = {
     gs01: {20: ["assets/img/figs/gaoshu/gs01-p20-1.jpg"], 31: ["assets/img/figs/gaoshu/gs01-p31-1.jpg"]},
@@ -334,6 +526,8 @@
         okB.onclick = function () { if (store[key]) return; store[key] = { ok: true, q: p.q, a: p.a, sol: p.sol }; A.jset("prob", store); st = store[key]; reveal(); paintGrade(); stats(); };
         noB.onclick = function () { if (store[key]) return; store[key] = { ok: false, q: p.q, a: p.a, sol: p.sol }; A.jset("prob", store); st = store[key]; reveal(); paintGrade(); stats(); };
         wrap.appendChild(okB); wrap.appendChild(noB); box.appendChild(wrap);
+        var hwb = hwBox(L.id + ":hw" + p.n);
+        if (solBox) box.insertBefore(hwb, solBox); else box.appendChild(hwb);
         if (showBtn) showBtn.onclick = function () { reveal(); showBtn.disabled = true; showBtn.textContent = "已显示答案与解答"; };
         if (st) { reveal(); paintGrade(); }
       }
@@ -505,6 +699,7 @@
       setInterval(function () { if (!document.hidden) update(); }, 900);
     }
     typeset([chapterHost]);
+    initHW(cid);
     return;
   }
 
@@ -538,4 +733,5 @@
   typeset([host]);
   makeQuiz(L, document.getElementById("quiz"), document.getElementById("quizscore"), document.getElementById("quizreset"));
   initProblems(host, L);
+  initHW(L.id);
 })();
