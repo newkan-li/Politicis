@@ -237,3 +237,36 @@ body[data-page="chapter"] .wrap{max-width:1200px}
 @media(max-width:560px){.bkrow{grid-template-columns:24px 1fr}.bkstate{display:none}}
 @media print{.navrow,#bctl,.bkcheck,.bklinks{display:none!important}.bkrow{break-inside:avoid}}
 .bklegend{font-size:11.5px;color:var(--sub);margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* 精讲精练文字版 */
+.jj-layout{display:flex;gap:16px;align-items:flex-start}
+.jj-side{flex:0 0 250px;position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
+.jj-side input{width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-size:13px;outline:none}
+.jj-side input:focus{border-color:var(--acc)}
+.jj-ph{font-size:12px;color:var(--acc);font-weight:700;margin:10px 0 4px;line-height:1.5}
+.jj-ch{display:block;font-size:12.5px;color:var(--fg);padding:3px 6px;border-radius:6px;line-height:1.5}
+.jj-ch:hover{background:var(--hl)}
+.jj-ch.on{background:var(--acc);color:#fff}
+.jj-res{padding:5px 6px;border-bottom:1px solid var(--line)}
+.jj-res a{font-size:12.5px;font-weight:600;display:block}
+.jj-snip{font-size:11.5px;color:var(--sub);line-height:1.5;margin-top:2px}
+.jj-main{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+.jj-bc{font-size:12px;color:var(--sub)}
+.jj-main h2{font-size:19px;margin:4px 0 6px}
+.jj-meta{font-size:12px;color:var(--sub);margin-bottom:8px}
+.jj-q{background:var(--hl);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12.5px;margin:8px 0}
+.jj-text{font-size:14px;line-height:1.95;overflow-wrap:anywhere}
+.jj-text p{margin:0 0 10px}
+.jj-page{position:relative;padding-top:4px}
+.jj-pgn{display:inline-block;font-size:10.5px;color:var(--sub);border:1px solid var(--line);border-radius:8px;padding:0 6px;margin-right:6px;vertical-align:1px}
+.jj-nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px;padding-top:12px;border-top:1px solid var(--line)}
+.jj-nav a{font-size:13px}
+#jjtoggle{display:none}
+@media(max-width:760px){
+  .jj-layout{display:block}
+  .jj-side{position:static;max-height:60vh;margin-bottom:10px;display:none}
+  .jj-side.open{display:block}
+  #jjtoggle{display:inline-block}
+  .jj-main{padding:12px}
+}
+@media print{.jj-side,.navrow,.jj-nav,#jjtoggle{display:none!important}.jj-main{border:0;padding:0}.jj-page{break-inside:auto}}

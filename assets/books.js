@@ -14,7 +14,7 @@
     if (b.free) {
       links = '<a href="https://www.gov.cn/" target="_blank" rel="noopener">官方</a> · <a href="https://www.xuexi.cn/" target="_blank" rel="noopener">学习强国</a>';
     } else {
-      links = '<a href="' + q(b.t) + '" target="_blank" rel="noopener">京东</a> · <a href="' + d(b.t) + '" target="_blank" rel="noopener">当当</a> · <a href="https://www.nlc.cn/" target="_blank" rel="noopener">国图</a> · <a href="https://www.chaoxing.com/" target="_blank" rel="noopener">超星</a>';
+      links = (b.id === "jjjl" ? '<a href="jingjiang.html">站内精讲 →</a> · ' : '') + '<a href="' + q(b.t) + '" target="_blank" rel="noopener">京东</a> · <a href="' + d(b.t) + '" target="_blank" rel="noopener">当当</a> · <a href="https://www.nlc.cn/" target="_blank" rel="noopener">国图</a> · <a href="https://www.chaoxing.com/" target="_blank" rel="noopener">超星</a>';
     }
     return '<div class="bkrow' + (have ? ' have' : '') + '"><label class="bkcheck"><input type="checkbox" data-id="' + b.id + '"' + (have ? ' checked' : '') + '></label>' +
       '<div><div class="bktitle"><span class="bkp ' + b.p + '">' + b.p + '</span> ' + esc(b.t) + ' <span class="bktag">' + esc(b.tag) + '</span></div>' +
