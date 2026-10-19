@@ -416,8 +416,171 @@ window.POLVIDEOS = {
       "dur": "1:33"
      }
     ]
+   },
+   {
+    "ch": "第八章 习近平新时代中国特色社会主义思想及其历史地位",
+    "videos": [
+     {
+      "part": "第1章 新时代坚持和发展中国特色社会主义",
+      "bvid": "BV12GmHYcEgp",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "33:49"
+     }
+    ]
+   },
+   {
+    "ch": "第九章 坚持和发展中国特色社会主义的总任务",
+    "videos": [
+     {
+      "part": "第2章 以中国式现代化全面推进中华民族伟大复兴",
+      "bvid": "BV1sxmNY7EXR",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "23:25"
+     }
+    ]
+   },
+   {
+    "ch": "第十章 “五位一体”总体布局",
+    "videos": [
+     {
+      "part": "第6章 推动高质量发展",
+      "bvid": "BV1HRS8YHEoU",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "27:19"
+     },
+     {
+      "part": "第7章 发展全过程人民民主",
+      "bvid": "BV1nZS8YJEhS",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "23:39"
+     },
+     {
+      "part": "第8章 全面依法治国",
+      "bvid": "BV1uzS8YYEeJ",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "38:42"
+     },
+     {
+      "part": "第9章 建设社会主义文化强国",
+      "bvid": "BV1bmSeYkEnh",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "26:07"
+     },
+     {
+      "part": "第10章 增进民生福祉",
+      "bvid": "BV1k4SLY5E4W",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "40:50"
+     },
+     {
+      "part": "第11章 建设美丽中国",
+      "bvid": "BV1w8SLYVEc5",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "26:13"
+     }
+    ]
+   },
+   {
+    "ch": "第十一章 “四个全面”战略布局",
+    "videos": [
+     {
+      "part": "第5章 全面深化改革开放",
+      "bvid": "BV1ZFy8YhEcT",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "30:46"
+     },
+     {
+      "part": "第8章 全面依法治国",
+      "bvid": "BV1uzS8YYEeJ",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "38:42"
+     },
+     {
+      "part": "第15章 全面从严治党",
+      "bvid": "BV1pvS9YpE5M",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "20:30"
+     }
+    ]
+   },
+   {
+    "ch": "第十二章 实现中华民族伟大复兴的重要保障",
+    "videos": [
+     {
+      "part": "第12章 全面推进国防和军队现代化",
+      "bvid": "BV1GeSEYTEHY",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "31:32"
+     },
+     {
+      "part": "第13章 坚持“一国两制”和推进祖国完全统一",
+      "bvid": "BV1MFSEY8EqH",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "19:47"
+     }
+    ]
+   },
+   {
+    "ch": "第十三章 中国特色大国外交",
+    "videos": [
+     {
+      "part": "第14章 中国特色大国外交",
+      "bvid": "BV1Z1S9Y1Eup",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "21:10"
+     }
+    ]
+   },
+   {
+    "ch": "第十四章 坚持和加强党的领导",
+    "videos": [
+     {
+      "part": "第3章 坚持党的全面领导",
+      "bvid": "BV123ycYhEib",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "26:03"
+     },
+     {
+      "part": "第15章 全面从严治党",
+      "bvid": "BV1pvS9YpE5M",
+      "page": 1,
+      "teacher": "瑞秋",
+      "course": "新思想带背 15 章",
+      "dur": "20:30"
+     }
+    ]
    }
   ],
-  "note": "第 8–14 章为“习近平新时代中国特色社会主义思想”，本站暂未匹配到完整分P，后续补。"
+  "note": "第 8–14 章（习近平新时代中国特色社会主义思想）用“新思想 15 章带背”按主题映射；个别视频跨章复用。"
  }
 };
