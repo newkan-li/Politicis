@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#a4262c">
+<title>政治微课 · 马原/毛中特 · 考研政治</title>
+<link rel="stylesheet" href="assets/style.css?v=20261019a">
+<script src="assets/theme.js?v=20261019a"></script>
+</head>
+<body data-page="video">
+<script src="auth.js"></script>
+<div class="wrap">
+<header class="top"><h1>🎬 政治微课（B站）</h1>
+<p>按讲义章节对应 · 马原 17 段 + 毛中特 24 段 · 站内播放/跳转 B 站</p></header>
+<div class="navrow"><a class="navbtn" href="index.html">← 返回首页</a><a class="navbtn" href="mayuan-lecture.html">📘 马原讲义</a><a class="navbtn" href="mzt-lecture.html">📘 毛中特讲义</a><a class="navbtn" href="guide.html">🧭 使用指南</a></div>
+<div class="notice" id="note"></div>
+<div class="vtabs" id="tabs"></div>
+<div class="vplayer" id="player" style="display:none">
+  <div class="vp-h"><b id="vp-title"></b><button class="vp-close" id="vp-close">关闭</button></div>
+  <div class="vp-frame"><iframe id="vp-iframe" allowfullscreen scrolling="no" frameborder="0"></iframe></div>
+</div>
+<div id="host"></div>
+<footer>考研政治自学网站 · 微课为 B 站在线资源 · 仅供个人学习使用</footer>
+</div>
+<script src="data/videos.js?v=20261019a"></script>
+<script>
+(function(){
+  var P=window.POLVIDEOS||{}, host=document.getElementById("host"), tabs=document.getElementById("tabs"), note=document.getElementById("note");
+  var player=document.getElementById("player"), iframe=document.getElementById("vp-iframe"), vpTitle=document.getElementById("vp-title");
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(m){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[m];});}
+  var keys=Object.keys(P);
+  var cur=(new URLSearchParams(location.search).get("s")||keys[0]||"mayuan");
+  if(keys.indexOf(cur)<0) cur=keys[0];
+  function play(v){
+    player.style.display="block";
+    vpTitle.textContent=v.part+" · "+v.teacher;
+    iframe.src="https://player.bilibili.com/player.html?bvid="+encodeURIComponent(v.bvid)+"&page="+v.page+"&high_quality=1&danmaku=0&autoplay=1";
+    player.scrollIntoView({behavior:"smooth",block:"center"});
+  }
+  function vcard(v,si,ci,vi){
+    return '<div class="vcard"><div class="vc-top"><span class="vteacher">'+esc(v.teacher)+'</span><span>'+esc(v.dur)+'</span></div>'+
+      '<div class="vtitle">'+esc(v.part)+'</div><div class="vcourse">'+esc(v.course)+'</div>'+
+      '<div class="vbtns"><button class="vplay" data-s="'+si+'" data-c="'+ci+'" data-v="'+vi+'">▶ 播放</button>'+
+      '<a class="vlink" target="_blank" rel="noopener" href="https://www.bilibili.com/video/'+esc(v.bvid)+'/?p='+v.page+'">B站原页 →</a></div></div>';
+  }
+  function render(){
+    Array.prototype.forEach.call(tabs.children,function(b){b.className="vtab"+(b.dataset.s===cur?" on":"");});
+    var obj=P[cur]; if(!obj){host.innerHTML="";return;}
+    var total=0; obj.chapters.forEach(function(c){total+=c.videos.length;});
+    var h=obj.sub?('<b>'+esc(obj.title)+'</b> ｜ '+esc(obj.sub)+' ｜ 共 '+total+' 段'):('<b>'+esc(obj.title)+'</b> ｜ 共 '+total+' 段');
+    if(obj.note) h+='<br><span style="font-size:12.5px;color:var(--sub)">'+esc(obj.note)+'</span>';
+    note.innerHTML=h;
+    var html="";
+    obj.chapters.forEach(function(c,ci){
+      html+='<div class="vgroup"><h3>'+esc(c.ch)+' <span style="font-size:11.5px;color:var(--sub);font-weight:400">'+c.videos.length+' 段</span></h3><div class="vgrid">';
+      c.videos.forEach(function(v,vi){html+=vcard(v,cur,ci,vi);});
+      html+='</div></div>';
+    });
+    host.innerHTML=html||'<p class="cs">暂无视频</p>';
+  }
+  keys.forEach(function(k){
+    var b=document.createElement("button"); b.className="vtab"; b.dataset.s=k;
+    b.textContent="🎬 "+(P[k].title||k); b.onclick=function(){cur=k;history.replaceState(null,"","?s="+k);render();};
+    tabs.appendChild(b);
+  });
+  host.addEventListener("click",function(e){
+    var b=e.target.closest?e.target.closest(".vplay"):null; if(!b)return;
+    var obj=P[b.dataset.s]; if(!obj)return;
+    var c=obj.chapters[+b.dataset.c]; if(!c)return;
+    var v=c.videos[+b.dataset.v]; if(v)play(v);
+  });
+  document.getElementById("vp-close").onclick=function(){player.style.display="none";iframe.src="about:blank";};
+  render();
+})();
+</script>
+</body>
+</html>
