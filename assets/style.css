@@ -299,3 +299,11 @@ html[data-theme="dark"] .fx-miss{background:#2a2414;border-color:#4a3f1c;color:#
 .fx-ans{background:var(--hl);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
 .fx-ansbody p{font-size:13px;line-height:1.9;margin:6px 0}
 .fx-ansbody{max-height:none}
+
+/* 答题模板 */
+.tpl{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:12px 0}
+.tpl h3{margin:2px 0 8px;font-size:15px;color:var(--acc)}
+.tpl .step{font-size:13.2px;line-height:1.9;margin:5px 0;padding-left:4px}
+.tpl .step b{color:var(--acc)}
+.tpl .eg{background:var(--hl);border-left:3px solid var(--acc);padding:6px 10px;margin:8px 0;font-size:13px;line-height:1.85}
+.tpl .eg b{color:var(--acc)}
