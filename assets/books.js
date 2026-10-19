@@ -23,13 +23,15 @@
       '<div class="bkstate">' + (have ? '✅ 已有' : '⬜ 缺') + '</div></div>';
   }
   function counts() {
-    var h = 0; B.forEach(function (b) { if (has(b)) h++; });
-    return { h: h, t: B.length, m: B.length - h };
+    var h = 0, sp = 0;
+    B.forEach(function (b) { if (has(b)) h++; if (b.p === "P1" && !has(b)) sp++; });
+    return { h: h, t: B.length, m: B.length - h, sp: sp };
   }
   function render() {
     var c = counts();
-    sum.innerHTML = '<b>已有 ' + c.h + ' / ' + c.t + '</b> ｜ 缺 <b class="miss">' + c.m + '</b> ｜ 完成度 ' + Math.round(c.h / c.t * 100) + '%<div class="sbar" style="margin-top:6px"><i style="width:' + Math.round(c.h / c.t * 100) + '%"></i></div>';
-    ctl.innerHTML = '<select id="bp" class="wsel"><option value="all">全部优先级</option><option value="P0">P0 现在</option><option value="P1">P1 冲刺</option><option value="P2">P2 可选</option><option value="免费">免费官方</option></select>' +
+    sum.innerHTML = '<b>已有 ' + c.h + ' / ' + c.t + '</b> ｜ 缺 <b class="miss">' + c.m + '</b> ｜ 冲刺必补还缺 <b class="miss">' + c.sp + '</b> ｜ 完成度 ' + Math.round(c.h / c.t * 100) + '%<div class="sbar" style="margin-top:6px"><i style="width:' + Math.round(c.h / c.t * 100) + '%"></i></div>' +
+      '<div class="bklegend"><span class="bkp P0">P0</span>现在/已有 <span class="bkp P1">P1</span>冲刺必补 <span class="bkp P2">P2</span>可选 <span class="bkp 免费">免费</span>官方免费</div>';
+    ctl.innerHTML = '<select id="bp" class="wsel"><option value="all">全部优先级</option><option value="P0">P0 现在/已有</option><option value="P1">P1 冲刺必补</option><option value="P2">P2 可选</option><option value="免费">免费官方</option></select>' +
       '<select id="bst" class="wsel"><option value="all">全部状态</option><option value="miss">只看缺</option><option value="have">只看已有</option></select>' +
       '<button class="navbtn" id="breset">重置</button><button class="navbtn" id="bprint">打印清单</button>';
     document.getElementById("bp").value = F.p; document.getElementById("bst").value = F.st;
