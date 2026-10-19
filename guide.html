@@ -24,6 +24,14 @@ table.gt th{background:rgba(164,38,44,.08);color:var(--acc)}
 table.gt td.num{text-align:right;white-space:nowrap}
 .chk{list-style:none;padding-left:0;font-size:13.2px;line-height:2}
 .chk li:before{content:"☐ ";color:var(--acc)}
+.guide-layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;align-items:start}
+.guide-side{position:sticky;top:10px;align-self:start;max-height:calc(100vh - 20px);overflow:auto}
+.guide-side .tocbox{display:block;margin:0;padding:10px 12px}
+.guide-side .tocbox b{display:block;margin:0 0 6px}
+.guide-side .tocbox a{display:block;padding:3px 6px;border-radius:6px;font-size:12.5px}
+.guide-side .tocbox a:hover{background:var(--hl)}
+.guide-main{min-width:0}
+@media(max-width:900px){.guide-layout{display:block}.guide-side{position:static;max-height:none;margin-bottom:12px}.guide-side .tocbox{display:flex;flex-wrap:wrap;gap:6px 14px}.guide-side .tocbox b{width:100%}.guide-side .tocbox a{display:inline-block}}
 .tocbox{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0 16px;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;align-items:center}
 .tocbox b{width:100%;color:var(--acc);font-size:13.5px;margin-bottom:2px}
 .tocbox a{color:var(--fg);padding:2px 0}
@@ -53,10 +61,14 @@ html[data-theme="dark"] .warnbox{background:#2a2414;border-color:#4a3f1c;color:#
     <a class="navbtn" href="#" onclick="window.print();return false">🖨 打印本页</a>
   </div>
 
+  <div class="guide-layout">
+  <aside class="guide-side">
   <div class="tocbox">
     <b>📑 目录</b>
     <a href="#s1">一、功能地图</a><a href="#s2">二、五大部分对应</a><a href="#s3">三、学习顺序</a><a href="#s4">四、3 分钟上手</a><a href="#s5">五、目标分</a><a href="#s6">六、分析题怎么用</a><a href="#s7">七、阶段计划</a><a href="#s8">八、每天/每周</a><a href="#s9">九、提分技巧</a><a href="#s10">十、常见误区</a><a href="#s11">十一、本站 vs 机构</a>
   </div>
+  </aside>
+  <div class="guide-main">
 
   <div class="warnbox"><b>一句话：</b>政治提分靠<b>选择题</b>（尤其多选）。先用<b>三科框架/讲义</b>建立体系，再用肖1000 刷题；错题标错因、统计找薄弱章，最后背分析题模板与时政。选择题稳了，70+ 就有了。</div>
 
@@ -262,6 +274,8 @@ html[data-theme="dark"] .warnbox{background:#2a2414;border-color:#4a3f1c;color:#
   </div>
 
   <p class="noprint" style="margin-top:16px"><a class="navbtn" style="display:inline-block;width:auto" href="xiao1000.html">开始刷肖1000 →</a> <a class="navbtn" style="display:inline-block;width:auto" href="mayuan-lecture.html">马原精讲 →</a> <a class="navbtn" style="display:inline-block;width:auto" href="mzt-lecture.html">毛中特精讲 →</a> <a class="navbtn" style="display:inline-block;width:auto" href="frame.html">三科框架 →</a> <a class="navbtn" style="display:inline-block;width:auto" href="stats.html">正确率统计 →</a> <a class="navbtn" style="display:inline-block;width:auto" href="video.html">微课 →</a></p>
+  </div>
+  </div>
   <footer>仅供个人学习使用 · 分值以当年考试大纲/真题为准</footer>
 </div>
 </body>
