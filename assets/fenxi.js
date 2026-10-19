@@ -10,10 +10,10 @@
     history.replaceState(null, "", "?p=" + cur);
     var o = parts[cur]; if (!o) { host.innerHTML = ""; return; }
     note.innerHTML = "<b>" + esc(D.title || "") + "</b> ｜ " + esc(D.note || "") + " ｜ <a href=\"xiao1000-pages.html#b=0&p=" + o.page + "\" target=\"_blank\">打开原书原页 →</a>";
-    var h = '<div class="statsbox" style="margin:8px 0 4px"><b>' + esc(o.name) + '</b> ｜ 共 ' + o.items.length + ' 题 ｜ <a href="xiao1000-pages.html#b=0&p=' + o.page + '" target="_blank">原页 p' + o.page + ' →</a></div>';
+    var h = '<div class="statsbox" style="margin:8px 0 4px"><b>' + esc(o.name) + '</b> ｜ 共 ' + o.items.length + ' 题 ｜ <a href="xiao1000-pages.html#b=0&p=' + o.page + '" target="_blank">原页 p' + (o.range || o.page) + ' →</a></div>';
     o.items.forEach(function (it) {
       h += '<div class="fx-item">';
-      h += '<div class="fx-h">第 ' + esc(it.n) + ' 题 <a href="xiao1000-pages.html#b=0&p=' + o.page + '" target="_blank">原页 p' + o.page + ' →</a></div>';
+      h += '<div class="fx-h">第 ' + esc(it.n) + ' 题 <a href="xiao1000-pages.html#b=0&p=' + o.page + '" target="_blank">原页 p' + (o.range || o.page) + ' →</a></div>';
       if (it.material) {
         h += '<details class="fx-mat"><summary>📄 材料（点击展开）</summary>' + paras(it.material) + '</details>';
       }
