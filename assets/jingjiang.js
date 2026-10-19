@@ -1,5 +1,6 @@
 (function () {
   var D = window.JINGJIANG || {}, parts = D.parts || [];
+  var V = window.JJVIDEOS || {};
   var flat = [];
   parts.forEach(function (p, pi) {
     (p.chapters || []).forEach(function (c, ci) { flat.push({ p: pi, c: ci, part: p.name, ch: c }); });
@@ -70,6 +71,27 @@
     "第四部分 中国近现代史纲要": ["q1000_s6", "q1000_s7"],
     "第五部分 思想道德与法治": ["q1000_s8", "q1000_s9"]
   };
+  function videoBlock(key, partName) {
+    var list = (V.videos || {})[key] || [];
+    if (!list.length) {
+      if ((V.miss || []).indexOf(key) >= 0) {
+        var href = partName.indexOf("毛中特") >= 0 ? "video.html?s=mzt" : "video.html";
+        return '<div class="jj-vmiss">🎬 官方配套视频暂未更新（本套课缺这一章）。可先看 <a href="' + href + '">站内微课</a>。</div>';
+      }
+      return "";
+    }
+    var h = '<div class="jj-vbox"><details><summary>🎬 官方配套视频（' + list.length + ' 段）<span>' + esc(V.bvid) + ' · ' + esc(V.owner || "") + '</span></summary>';
+    h += '<div class="vplayer" id="jjvp" style="display:none"><div class="vp-h"><b id="jjvp-title"></b><button class="vp-close" id="jjvp-close">关闭</button></div><div class="vp-frame"><iframe id="jjvp-iframe" allowfullscreen scrolling="no" frameborder="0"></iframe></div></div>';
+    h += '<div class="jj-vgrid">';
+    list.forEach(function (v) {
+      h += '<div class="jvcard"><div class="jvtop"><span>#' + v.page + '</span><span>' + esc(v.dur) + '</span></div>' +
+        '<div class="jvtitle">' + esc(v.part) + '</div>' +
+        '<div class="jvbtns"><button class="jvplay" data-bv="' + esc(v.bvid) + '" data-pg="' + v.page + '" data-part="' + esc(v.part) + '">▶ 播放</button>' +
+        '<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/' + esc(v.bvid) + '/?p=' + v.page + '">B站</a></div></div>';
+    });
+    h += '</div><p class="cs" style="font-size:11.5px;margin:6px 0 2px">官方配套课，按精讲章节映射；部分视频跨章复用。</p></details></div>';
+    return h;
+  }
   function renderMain() {
     var f = flat[idxOf(cur.p, cur.c)], p = parts[f.p], c = f.ch;
     document.title = c.name + " · 精讲精练 · 考研政治";
@@ -77,6 +99,7 @@
     h += '<div class="jj-meta">原书 p' + c.from + '–' + c.to + ' ｜ ' + (c.pages || []).length + ' 页 ｜ OCR 文字 ｜ <a href="#" id="jjprint">🖨 打印本章</a></div>';
     var q = QMAP[p.name];
     if (q) h += '<div class="jj-q">对应肖1000：<a href="xiao1000.html#' + q[0] + '">单项选择 →</a> ｜ <a href="xiao1000.html#' + q[1] + '">多项选择 →</a> ｜ <a href="xiao1000.html?set=multi">多选专项 →</a></div>';
+    h += videoBlock(cur.p + "-" + cur.c, p.name);
     h += '<div class="jj-text">';
     (c.pages || []).forEach(function (pg) {
       h += '<div class="jj-page"><span class="jj-pgn">p' + pg[0] + '</span>';
@@ -90,6 +113,19 @@
       (next ? '<a href="?p=' + next.p + '&c=' + next.c + '" data-p="' + next.p + '" data-c="' + next.c + '">' + esc(next.ch.name) + ' →</a>' : '<span></span>') + '</div>';
     main.innerHTML = h;
     var pr = document.getElementById("jjprint"); if (pr) pr.onclick = function (e) { e.preventDefault(); window.print(); };
+    var jvp = document.getElementById("jjvp"), jvi = document.getElementById("jjvp-iframe"), jvt = document.getElementById("jjvp-title");
+    if (jvp) {
+      main.querySelectorAll(".jvplay").forEach(function (b) {
+        b.onclick = function () {
+          jvp.style.display = "block";
+          jvt.textContent = b.dataset.part;
+          jvi.src = "https://player.bilibili.com/player.html?bvid=" + encodeURIComponent(b.dataset.bv) + "&page=" + b.dataset.pg + "&high_quality=1&danmaku=0&autoplay=1";
+          jvp.scrollIntoView({ behavior: "smooth", block: "center" });
+        };
+      });
+      var jvc = document.getElementById("jjvp-close");
+      if (jvc) jvc.onclick = function () { jvp.style.display = "none"; jvi.src = "about:blank"; };
+    }
     main.querySelectorAll(".jj-nav a[data-p]").forEach(function (a) {
       a.onclick = function (e) { e.preventDefault(); load(+a.dataset.p, +a.dataset.c, true); };
     });

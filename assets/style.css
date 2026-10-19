@@ -270,3 +270,16 @@ body[data-page="chapter"] .wrap{max-width:1200px}
   .jj-main{padding:12px}
 }
 @media print{.jj-side,.navrow,.jj-nav,#jjtoggle{display:none!important}.jj-main{border:0;padding:0}.jj-page{break-inside:auto}}
+
+/* 精讲官方配套视频 */
+.jj-vbox{margin:10px 0;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:6px 10px}
+.jj-vbox summary{cursor:pointer;font-weight:600;color:var(--acc);font-size:13px;padding:4px 0}
+.jj-vbox summary span{font-weight:400;color:var(--sub);font-size:11.5px;margin-left:6px}
+.jj-vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin:8px 0}
+.jvcard{border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:var(--hl)}
+.jvtop{display:flex;justify-content:space-between;font-size:11px;color:var(--sub)}
+.jvtitle{font-size:12.5px;font-weight:600;line-height:1.5;margin:2px 0}
+.jvbtns{display:flex;gap:8px;align-items:center;margin-top:3px;font-size:11.5px}
+.jvplay{background:var(--acc);color:#fff;border:none;border-radius:12px;padding:3px 10px;font-size:11.5px;cursor:pointer}
+.jj-vmiss{background:#fff8e8;border:1px solid #f0d9a8;color:#5a4a1a;border-radius:8px;padding:6px 10px;font-size:12.5px;margin:8px 0}
+html[data-theme="dark"] .jj-vmiss{background:#2a2414;border-color:#4a3f1c;color:#e8d49a}
