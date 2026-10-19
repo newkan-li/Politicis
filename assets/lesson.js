@@ -574,6 +574,13 @@
     var cid = document.body.dataset.chapter || "gs01";
     var ids = Object.keys(window.LESSONS || {}).filter(function (k) { return k.indexOf(cid + "_s") === 0; });
     ids.sort(function (a, b) { return (a.split("_s")[1] | 0) - (b.split("_s")[1] | 0); });
+    var _set = (new URLSearchParams(location.search)).get("set");
+    if (cid === "q1000" && (_set === "multi" || _set === "single")) {
+      ids = ids.filter(function (k) {
+        var t = (window.LESSONS[k] && window.LESSONS[k].title) || "";
+        return _set === "multi" ? t.indexOf("多项选择") >= 0 : t.indexOf("单项选择") >= 0;
+      });
+    }
     var html = "";
     ids.forEach(function (k) {
       var L = window.LESSONS[k];
@@ -588,6 +595,10 @@
       }
       html += "</section>";
     });
+    if (cid === "q1000" && _set) {
+      var _n = 0; ids.forEach(function (k) { _n += ((window.LESSONS[k] || {}).problems || []).length; });
+      html = '<div class="notice"><b>' + (_set === "multi" ? "🔢 多选专项" : "🔤 单选专项") + '</b>：仅显示' + (_set === "multi" ? "多项选择题" : "单项选择题") + '，共 ' + _n + ' 题（' + ids.length + ' 个部分）。<a href="xiao1000.html">查看全部 →</a></div>' + html;
+    }
     chapterHost.innerHTML = html;
     ids.forEach(function (k) {
       var L = window.LESSONS[k];

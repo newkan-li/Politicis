@@ -30,21 +30,32 @@
   function srsLabel(id) {
     var m = /^([a-z0-9]+)_s(\d+)$/.exec(id);
     if (m) {
+      if (m[1] === "q1000") {
+        var L = (window.LESSONS || {})["q1000_s" + m[2]] || {};
+        var nm = (L.ch || "肖1000").replace(/^肖1000 · /, "").trim();
+        return { text: nm + " · 第 " + (parseInt(m[2], 10) + 1) + " 节", href: "xiao1000.html#q1000_s" + m[2] };
+      }
       var ch = (window.MANIFEST || []).filter(function (x) { return x.id === m[1]; })[0];
       return { text: (ch ? ch.title : m[1]) + " · 第 " + (parseInt(m[2], 10) + 1) + " 节", href: m[1] + ".html" };
     }
-    var p = /^([a-z0-9]+)_s(\d+):(\d+)$/.exec(id);
+    var p = /^([a-z0-9]+)_s(\d+):(.+)$/.exec(id);
     if (p) {
+      if (p[1] === "q1000") {
+        var Lq = (window.LESSONS || {})["q1000_s" + p[2]] || {};
+        var nq = (Lq.ch || "肖1000").replace(/^肖1000 · /, "").trim();
+        return { text: nq + " · 第 " + String(p[3]).replace(/[()]/g, "") + " 题", href: "xiao1000.html#q1000_s" + p[2] };
+      }
       var c2 = (window.MANIFEST || []).filter(function (x) { return x.id === p[1]; })[0];
       return { text: (c2 ? c2.title : p[1]) + " · 第 " + (parseInt(p[2], 10) + 1) + " 节 · 练习第 " + p[3] + " 题", href: p[1] + ".html#" + p[1] + "_s" + p[2] };
     }
     return { text: id, href: null };
   }
   function lookupRec(key) {
-    var p = /^([a-z0-9]+)_s(\d+):(\d+)$/.exec(key);
+    var p = /^([a-z0-9]+)_s(\d+):(.+)$/.exec(key);
     if (p) {
       var Lp = (window.LESSONS || {})[p[1] + "_s" + p[2]];
-      var pr = Lp && Lp.problems && Lp.problems.filter(function (x) { return String(x.n) === String(p[3]); })[0];
+      var want = String(p[3]).replace(/[()]/g, "");
+      var pr = Lp && Lp.problems && Lp.problems.filter(function (x) { return String(x.n).replace(/[()]/g, "") === want; })[0];
       if (pr) return { q: pr.q, a: pr.a, sol: pr.sol };
     }
     return null;
@@ -112,30 +123,95 @@
   }
 
   /* ---------- 错题本 / 复习 ---------- */
+  var WF = { part: "all", multi: false, reason: "all" };
+  var PART_NAME = { mayuan: "马原", mzt: "毛中特", xsx: "新思想", sg: "史纲", sx: "思修", analysis: "材料分析", selftest: "自测/讲义" };
+  function partOf(key) {
+    var m = /^q1000_s(\d+):/.exec(key); if (!m) return "selftest";
+    var n = parseInt(m[1], 10);
+    if (n === 10) return "analysis";
+    return n <= 1 ? "mayuan" : n <= 3 ? "mzt" : n <= 5 ? "xsx" : n <= 7 ? "sg" : "sx";
+  }
+  function isMulti(key, rec) {
+    if (key.indexOf("q1000_") !== 0) return false;
+    var sid = key.split(":")[0], L = (window.LESSONS || {})[sid];
+    return !!(L && /多项选择/.test(L.title || "")) || !!(rec && (rec.multi || (rec.answers && rec.answers.length > 1)));
+  }
+  function reasonBar(key) {
+    var R = jget("reasons", {}), cur = R[key] || "";
+    var bar = el("div", "reasonbar");
+    bar.appendChild(el("span", "rlbl", "错因："));
+    [["concept", "概念"], ["memory", "记忆"], ["careless", "审题"]].forEach(function (o) {
+      var b = document.createElement("button");
+      b.className = "rbtn" + (cur === o[0] ? " on" : ""); b.textContent = o[1];
+      b.onclick = function () {
+        var all = jget("reasons", {}); if (all[key] === o[0]) delete all[key]; else all[key] = o[0];
+        jset("reasons", all); renderWrong();
+      };
+      bar.appendChild(b);
+    });
+    return bar;
+  }
   function renderWrong() {
     var host = document.getElementById("whost"); if (!host) return;
-    var mk = marks();
-    var secs = [];
+    var mk = marks(), secs = [];
     Object.keys(mk).forEach(function (key) { if (mk[key].conf) secs.push({ key: key, lab: srsLabel(key) }); });
     var qz = jget("quiz", {}), quiz = [];
     Object.keys(qz).forEach(function (key) { if (qz[key].wrong) quiz.push(key); });
     var pr = jget("prob", {}), probs = [];
     Object.keys(pr).forEach(function (key) { if (pr[key] && pr[key].ok === false) probs.push(key); });
-    if (!secs.length && !quiz.length && !probs.length) {
-      host.innerHTML = '<p class="empty">还没有错题。做错「练习题」「肖1000」或标记「不懂」后，会自动收集到这里。</p>';
+    var R = jget("reasons", {}), rc = { concept: 0, memory: 0, careless: 0 };
+    Object.keys(R).forEach(function (k) { if (rc[R[k]] != null) rc[R[k]]++; });
+    var allWrong = probs.length + quiz.length;
+
+    var bar = el("div", "wfbar");
+    var sel = el("select", "wsel");
+    [["all", "全部"], ["mayuan", "马原"], ["mzt", "毛中特"], ["xsx", "新思想"], ["sg", "史纲"], ["sx", "思修"], ["analysis", "材料分析"], ["selftest", "自测/讲义"]].forEach(function (o) {
+      var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; if (WF.part === o[0]) op.selected = true; sel.appendChild(op);
+    });
+    sel.onchange = function () { WF.part = sel.value; renderWrong(); };
+    var lb = document.createElement("label"); lb.className = "wchk";
+    var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = WF.multi;
+    cb.onchange = function () { WF.multi = cb.checked; renderWrong(); };
+    lb.appendChild(cb); lb.appendChild(document.createTextNode(" 只看多选"));
+    var rsel = el("select", "wsel");
+    [["all", "全部错因"], ["concept", "概念"], ["memory", "记忆"], ["careless", "审题"], ["none", "未标错因"]].forEach(function (o) {
+      var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; if (WF.reason === o[0]) op.selected = true; rsel.appendChild(op);
+    });
+    rsel.onchange = function () { WF.reason = rsel.value; renderWrong(); };
+    bar.appendChild(sel); bar.appendChild(lb); bar.appendChild(rsel);
+    var sp = el("span", "wcount", "错题 " + allWrong + " 道 ｜ 错因：概念 " + rc.concept + " · 记忆 " + rc.memory + " · 审题 " + rc.careless);
+    bar.appendChild(sp);
+    var st = el("a", "wlink", "📊 正确率统计 →"); st.href = "stats.html"; bar.appendChild(st);
+    host.innerHTML = ""; host.appendChild(bar);
+
+    function keep(key, rec) {
+      if (WF.part !== "all" && partOf(key) !== WF.part) return false;
+      if (WF.multi && !isMulti(key, rec)) return false;
+      if (WF.reason !== "all") {
+        var r = R[key] || "";
+        if (WF.reason === "none" ? !!r : r !== WF.reason) return false;
+      }
+      return true;
+    }
+    probs = probs.filter(function (k) { return keep(k, pr[k]); });
+    quiz = quiz.filter(function (k) { return keep(k, qz[k]); });
+    var showSecs = (WF.part === "all" || WF.part === "selftest") && !WF.multi && WF.reason === "all";
+
+    if (!probs.length && !quiz.length && !(showSecs && secs.length)) {
+      host.appendChild(el("p", "empty", "当前筛选下没有错题。"));
       return;
     }
-    host.innerHTML = "";
     if (probs.length) {
-      host.appendChild(el("h2", null, "练习题错题（" + probs.length + "）"));
+      host.appendChild(el("h2", null, "肖1000 错题（" + probs.length + "）"));
       probs.forEach(function (key) {
         var lab = srsLabel(key), it = el("div", "fitem");
-        it.innerHTML = '<div class="fh">' + esc(lab.text) + '</div>' + wrongBody(pr[key], key) +
-          (lab.href ? '<div><a href="' + lab.href + '">回到练习题 →</a></div>' : "");
-        var bar = el("div", "mark"), b = document.createElement("button");
+        it.innerHTML = '<div class="fh">' + esc(lab.text) + (isMulti(key, pr[key]) ? ' <span class="chip">多选</span>' : "") + '</div>' + wrongBody(pr[key], key) +
+          (lab.href ? '<div><a href="' + lab.href + '">回到题目 →</a></div>' : "");
+        it.appendChild(reasonBar(key));
+        var bar2 = el("div", "mark"), b = document.createElement("button");
         b.textContent = "✓ 已弄懂，移除";
         b.onclick = function () { var all = jget("prob", {}); if (all[key]) all[key].ok = true; jset("prob", all); renderWrong(); };
-        bar.appendChild(b); it.appendChild(bar); host.appendChild(it);
+        bar2.appendChild(b); it.appendChild(bar2); host.appendChild(it);
       });
     }
     if (quiz.length) {
@@ -143,22 +219,23 @@
       quiz.forEach(function (key) {
         var lab = srsLabel(key), it = el("div", "fitem");
         it.innerHTML = '<div class="fh">' + esc(lab.text) + '</div>' + wrongBody(qz[key], key);
-        var bar = el("div", "mark"), b = document.createElement("button");
+        it.appendChild(reasonBar(key));
+        var bar2 = el("div", "mark"), b = document.createElement("button");
         b.textContent = "✓ 已弄懂，移除";
         b.onclick = function () { var all = jget("quiz", {}); if (all[key]) all[key].wrong = false; jset("quiz", all); srsForget(key); renderWrong(); };
-        bar.appendChild(b); it.appendChild(bar); host.appendChild(it);
+        bar2.appendChild(b); it.appendChild(bar2); host.appendChild(it);
       });
     }
-    if (secs.length) {
+    if (showSecs && secs.length) {
       host.appendChild(el("h2", null, "章节不懂（" + secs.length + "）"));
       secs.forEach(function (o) {
         var it = el("div", "fitem");
         it.innerHTML = '<div class="fh">' + esc(o.lab.text) + '</div>' +
           (o.lab.href ? '<div><a href="' + o.lab.href + '">打开讲义 →</a></div>' : "");
-        var bar = el("div", "mark"), b = document.createElement("button");
+        var bar2 = el("div", "mark"), b = document.createElement("button");
         b.textContent = "✓ 已弄懂，移除";
         b.onclick = function () { var all = marks(); if (all[o.key]) all[o.key].conf = false; jset("marks", all); renderWrong(); };
-        bar.appendChild(b); it.appendChild(bar); host.appendChild(it);
+        bar2.appendChild(b); it.appendChild(bar2); host.appendChild(it);
       });
     }
     if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([host]);
