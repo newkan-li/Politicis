@@ -80,7 +80,7 @@
       }
       return "";
     }
-    var h = '<div class="jj-vbox"><details><summary>🎬 官方配套视频（' + list.length + ' 段）<span>' + esc(V.bvid) + ' · ' + esc(V.owner || "") + '</span></summary>';
+    var h = '<div class="jj-vbox"><details open><summary>🎬 官方配套视频（' + list.length + ' 段）<span>' + esc(V.bvid) + ' · ' + esc(V.owner || "") + '</span></summary>';
     h += '<div class="vplayer" id="jjvp" style="display:none"><div class="vp-h"><b id="jjvp-title"></b><button class="vp-close" id="jjvp-close">关闭</button></div><div class="vp-frame"><iframe id="jjvp-iframe" allowfullscreen scrolling="no" frameborder="0"></iframe></div></div>';
     h += '<div class="jj-vgrid">';
     list.forEach(function (v) {
