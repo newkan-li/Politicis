@@ -283,3 +283,19 @@ body[data-page="chapter"] .wrap{max-width:1200px}
 .jvplay{background:var(--acc);color:#fff;border:none;border-radius:12px;padding:3px 10px;font-size:11.5px;cursor:pointer}
 .jj-vmiss{background:#fff8e8;border:1px solid #f0d9a8;color:#5a4a1a;border-radius:8px;padding:6px 10px;font-size:12.5px;margin:8px 0}
 html[data-theme="dark"] .jj-vmiss{background:#2a2414;border-color:#4a3f1c;color:#e8d49a}
+
+/* 分析题专项 */
+.fx-item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:12px 0}
+.fx-h{font-size:14.5px;font-weight:700;color:var(--acc);margin-bottom:6px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fx-h a{font-size:11.5px;font-weight:400;color:var(--sub)}
+.fx-item details{margin:6px 0}
+.fx-item summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--blue);padding:3px 0}
+.fx-item .fx-mat{border-left:3px solid var(--line);padding-left:10px}
+.fx-item .fx-mat p{font-size:13px;line-height:1.9;margin:4px 0;color:var(--fg)}
+.fx-q{margin:6px 0;font-size:13.5px;line-height:1.85}
+.fx-q div{margin:3px 0}
+.fx-miss{background:#fff8e8;border:1px solid #f0d9a8;color:#5a4a1a;border-radius:8px;padding:5px 9px;font-size:12.5px;margin:6px 0}
+html[data-theme="dark"] .fx-miss{background:#2a2414;border-color:#4a3f1c;color:#e8d49a}
+.fx-ans{background:var(--hl);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.fx-ansbody p{font-size:13px;line-height:1.9;margin:6px 0}
+.fx-ansbody{max-height:none}
