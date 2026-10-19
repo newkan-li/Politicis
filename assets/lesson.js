@@ -721,11 +721,20 @@
           keepVisible(links[cur]);
         }
       };
+      var navHold = 0, navAuto = false;
+      var holdNav = function () { navHold = Date.now() + 2500; };
+      ["wheel", "touchstart"].forEach(function (ev) { nav.addEventListener(ev, holdNav, { passive: true }); });
+      nav.addEventListener("pointerdown", holdNav);
+      nav.addEventListener("scroll", function () { if (!navAuto) holdNav(); }, { passive: true });
       var keepVisible = function (el) {
-        if (!el || nav.scrollHeight <= nav.clientHeight) return;
+        if (!el || Date.now() < navHold || (nav.matches && nav.matches(":hover"))) return;
+        if (nav.scrollHeight <= nav.clientHeight) return;
         var nb = nav.getBoundingClientRect(), eb = el.getBoundingClientRect();
-        if (eb.top < nb.top + 10) nav.scrollTop += eb.top - nb.top - 10;
-        else if (eb.bottom > nb.bottom - 10) nav.scrollTop += eb.bottom - nb.bottom + 10;
+        if (eb.top < nb.top + 10 || eb.bottom > nb.bottom - 10) {
+          navAuto = true;
+          nav.scrollTop += (eb.top < nb.top + 10) ? (eb.top - nb.top - 10) : (eb.bottom - nb.bottom + 10);
+          setTimeout(function () { navAuto = false; }, 80);
+        }
       };
       var onScroll = function () { update(); };
       window.addEventListener("scroll", onScroll, { passive: true });
@@ -734,7 +743,7 @@
       document.addEventListener("visibilitychange", onScroll);
       update();
       [80, 400, 1000, 2000, 3500].forEach(function (t) { setTimeout(update, t); });
-      setInterval(function () { if (!document.hidden) update(); }, 900);
+      // 不再用定时器强制跟随，避免用户在左侧目录滚动时被“拉回”
     }
     typeset([chapterHost]);
     initHW(cid);

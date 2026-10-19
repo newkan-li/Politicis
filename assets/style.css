@@ -69,7 +69,7 @@ details.pages summary{cursor:pointer;color:var(--acc);font-weight:600;font-size:
 body[data-page="chapter"] .wrap{max-width:1200px}
 .chapter-layout{display:grid;grid-template-columns:290px minmax(0,1fr);gap:20px;align-items:start;margin-top:6px}
 .chapter-main{min-width:0}
-.sidebar{position:sticky;top:12px;align-self:start;max-height:calc(100vh - 24px);overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.sidebar{position:sticky;top:12px;align-self:start;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 #chapter .sec{scroll-margin-top:12px}
 #chapter h3.lh,#chapter h4.lh2,#chapter h5.lh3{scroll-margin-top:12px}
 .toc{margin:0}
@@ -240,7 +240,7 @@ body[data-page="chapter"] .wrap{max-width:1200px}
 
 /* 精讲精练文字版 */
 .jj-layout{display:flex;gap:16px;align-items:flex-start}
-.jj-side{flex:0 0 250px;position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
+.jj-side{flex:0 0 250px;position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto;overscroll-behavior:contain;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
 .jj-side input{width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-size:13px;outline:none}
 .jj-side input:focus{border-color:var(--acc)}
 .jj-ph{font-size:12px;color:var(--acc);font-weight:700;margin:10px 0 4px;line-height:1.5}
